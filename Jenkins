@@ -9,6 +9,15 @@ pipeline{
                 git branch: 'main', url: 'https://github.com/singhiam15/IaC.git'
             }
         }
+        stage('AWS Authentication'){
+            steps{
+                withCredentials([[
+	                $class: 'AmazonWebServicesCredentialsBinding',
+	                CredentialsId; 'aws-jenkins-demo',
+	                accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+	                secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) 
+            }
+        }
         stage('Terraform Init'){
             steps{
                 sh 'terraform init'
