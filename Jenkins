@@ -1,29 +1,20 @@
 pipeline{
-    agent any
+	agent any
     tools {
           terraform 'Terraform'
     }
     stages{
-        stage('Git CheckOut'){
+       stage('Git CheckOut'){
             steps{
                 git branch: 'main', url: 'https://github.com/singhiam15/IaC.git'
             }
         }
-        stage('AWS Authentication'){
-            steps{
-                withCredentials([[
-	                $class: 'AmazonWebServicesCredentialsBinding',
-	                CredentialsId; 'aws-jenkins-demo',
-	                accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-	                secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) 
-            }
-        }
-        stage('Terraform Init'){
+       stage('Terraform Init'){
             steps{
                 sh 'terraform init'
             }
         }
-        stage('Terraform Apply'){
+       stage('Terraform Apply'){
             steps{
                 sh 'terraform apply --auto-approve'
             }
