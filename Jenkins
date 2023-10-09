@@ -1,0 +1,23 @@
+pipeline{
+    agent any
+    tools {
+          terraform 'Terraform'
+    }
+    stages{
+        stage('Git CheckOut'){
+            steps{
+                git branch: 'main', url: 'https://github.com/singhiam15/IaC.git'
+            }
+        }
+        stage('Terraform Init'){
+            steps{
+                sh 'terraform init'
+            }
+        }
+        stage('Terraform Apply'){
+            steps{
+                sh 'terraform apply --auto-approve'
+            }
+        }
+    }
+}
