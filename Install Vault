@@ -1,4 +1,54 @@
 URL :- https://developer.hashicorp.com/vault/install#Linux
-sudo yum install -y yum-utils
-sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
-sudo yum -y install vault
+$ sudo yum install -y yum-utils
+$ sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
+$ sudo yum -y install vault
+$ vault -version
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Vault TLS key and self-signed certificate have been generated in '/opt/vault/tls'.
+$ vault server -dev {To Start server in devlopment mode; In this mode, Vault runs entirely in-memory}
+$ export VAULT_ADDR='http://127.0.0.1:8200'
+$ export VAULT_TOKEN="hvs.lMsD9Xz9G3Uyp59dRTKHX6Dq"
+$ vault status
+***************************************************************************************************************************************
+-> Enable Secret Engine Path
+  $ vault secrets enable -path=my kv
+  $ vault kv put my/path my-key-1=value-1 {Write Key in the path}
+  $ vault kv get my/path {To read key}
+  $ vault ke get -format=json my/path {To read  key in Json format}
+  $ vault secrets list {To list all store secrets}
+  $ vault kv delete my/path {To delete key from the path}
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+$ vault secrets enable -path=aws aws {To enable secret engine path for AWS}
+$ vault secrets list
+$ vault secret enable -path=my kv {To enable custom secret engine path i.e. kv}
+$ vault secrets disable aws {To disable secret engine path for AWS}
+$ vault secrets list
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+HashiCorp Vault Dynamic Secrets generation for AWS :-
+$ vault secrets enable -path=aws aws
+$ vault write aws/config/root \
+  access_key=
+  secret_key=
+  region=
+$ vault write aws/roles/my-ec2-role \    {Creating a Role}/{Setting up role}
+        credential_type=iam_user \
+        policy_document=<<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "Stmt1426528957000",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:*"
+      ],
+      "Resource": [
+        "*"
+      ]
+    }
+  ]
+}
+EOF
+
+$ vault read aws/creds/my-ec2-role { Ask vault to generate ACCESS_Key and SECRET_key}
+$ vault lease revoke aws/creds/my-ec2-role/YxLcW6pY9A8O0esNdoJhOoln {To revoke lease id}
