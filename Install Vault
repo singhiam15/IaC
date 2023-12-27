@@ -52,3 +52,119 @@ EOF
 
 $ vault read aws/creds/my-ec2-role { Ask vault to generate ACCESS_Key and SECRET_key}
 $ vault lease revoke aws/creds/my-ec2-role/YxLcW6pY9A8O0esNdoJhOoln {To revoke lease id}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+▬▬▬▬▬▬ ⭐️ CLI command for handling vault policy⭐️ ▬▬▬▬▬▬ 
+1. List vault policies 
+$ vault policy list
+
+2. Write your custom policy 
+$ vault policy write my-policy -  EOF
+Dev servers have version 2 of KV secrets engine mounted by default, so will
+need these paths to grant permissions:
+path "secret/data/*" {
+  capabilities = ["create", "update"]
+}
+
+path "secret/data/foo" {
+  capabilities = ["read"]
+}
+EOF
+
+3. Read Vault policy details 
+$ vault policy read my-policy
+
+4. Delete Vault policy by policy name 
+$ vault policy delete my-policy
+
+5. Attach token to policy 
+$ export VAULT_TOKEN="$(vault token create -field token -policy=my-policy)"
+
+
+6. Associate auth method with policy 
+$ vault write auth/approle/role/my-role \
+    secret_id_ttl=10m \
+    token_num_uses=10 \
+    token_ttl=20m \
+    token_max_ttl=30m \
+    secret_id_num_uses=40 \
+    token_policies=my-policy
+
+7. Generate and Export Role ID
+export ROLE_ID="$(vault read -field=role_id auth/approle/role/my-role/role-id)"
+
+8. Generate and Export Secret ID
+export SECRET_ID="$(vault write -f -field=secret_id auth/approle/role/my-role/secret-id)"
+
+▬▬▬▬▬▬ ⭐️ End ⭐️ ▬▬▬▬▬▬ 
+
+▬▬▬▬▬▬ ⭐️ Token and GitHub Authentication commands ⭐️ ▬▬▬▬▬▬ 
+
+1. Create token 
+$ vault token create
+
+2. Vault login
+$ vault login 
+
+3. Revoke token
+$ vault token revoke YOUR_TOKEN_STRING
+
+4. List all authentication methods
+$ vault auth list
+
+5. Enable GitHub Authentication
+$ vault auth enable GitHub
+
+6. Create Organization in HashiCorp vault
+$ vault write auth/github/config organization=jhooq-test-org-2
+
+7. Create team
+$ vault write auth/github/map/teams/my-teams value=default,application
+
+8. Vault login using Github Method
+$ vault login -method=github
+
+9. Revoke Github Authentication
+$ vault token revoke -mode path auth/github
+
+10. Disable Github Authentication
+$ vault auth disbale github
+
+▬▬▬▬▬▬ ⭐️ End ⭐️ ▬▬▬▬▬▬ 
+▬▬▬▬▬▬ ⭐️ Dynamic Secrets generation commands/To access Vault UI in production ⭐️ ▬▬▬▬▬▬ 
+
+1. Unset development token
+$ unset VAULT_TOKEN
+
+2. Vault's config.hcl 
+storage "raft" {
+  path    = "./vault/data"
+  node_id = "node1"
+}
+
+listener "tcp" {
+  address     = "127.0.0.1:8200"
+  tls_disable = "true"
+}
+
+api_addr = "http://127.0.0.1:8200"
+cluster_addr = "https://127.0.0.1:8201"
+ui = true
+
+3. Create "RAFT" storage backend directory
+$ mkdir -p ./vault/data
+
+4. Starting vault server using config.hcl 
+$ vault server -config=config.hcl
+
+5. Export VAULT_ADDR
+$ export VAULT_ADDR='http://127.0.0.1:8200'
+
+6. Initialize vault
+$ vault operator init
+
+7. Unseal vault
+$ vault operator unseal
+
+▬▬▬▬▬▬ ⭐️ End ⭐️ ▬▬▬▬▬▬ 
+
